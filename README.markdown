@@ -142,7 +142,7 @@ that do not work on API Level 7 and are not noted as requiring a higher version.
 
 Version
 -------
-This is version v0.3.0 of this module, meaning it is out of its years-long
+This is version v0.3.1 of this module, meaning it is out of its years-long
 hibernation and is ready to rampage through downtown San Francisco (or other
 cities if you prefer).
 
@@ -161,7 +161,8 @@ Questions
 ---------
 If you have questions regarding the use of this code, please post a question
 on [StackOverflow](http://stackoverflow.com/questions/ask) tagged with `commonsware-cwac`
-and `android`. Be sure to indicate
+and `android` after [searching to see if there already is an answer](https://stackoverflow.com/search?q=[android]+richedittext).
+Be sure to indicate
 what CWAC module you are having issues with, and be sure to include source code 
 and stack traces if you are encountering crashes.
 
@@ -179,6 +180,7 @@ the fence may work, but it may not.
 
 Release Notes
 -------------
+- v0.3.1: updated for Android Studio 1.0 and new AAR publishing system
 - v0.3.0: removed ActionBarSherlock support, icon for FORMAT action mode item, fixed clipboard bug, added Gradle support
 - v0.2.0: added keyboard shortcuts for bold/italic/underline and test suite, bug fixes
 - v0.1.1: added `disableActionModes()` and fixed bug related to conditional action mode usage

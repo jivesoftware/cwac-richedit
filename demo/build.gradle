@@ -1,13 +1,4 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.10.+'
-    }
-}
-
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 repositories {
     maven {
@@ -16,12 +7,13 @@ repositories {
 }
 
 dependencies {
-    compile 'com.commonsware.cwac:richedit:0.3.+'
+    debugCompile project(':richedit')
+    releaseCompile 'com.commonsware.cwac:richedit:0.3.+'
 }
 
 android {
     compileSdkVersion 17
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.1.0"
 
     sourceSets {
         main {

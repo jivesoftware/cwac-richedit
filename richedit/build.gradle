@@ -1,26 +1,8 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.10.+'
-        classpath 'com.github.dcendents:android-maven-plugin:1.0'
-    }
-}
-
-apply plugin: 'android-library'
-apply plugin: 'android-maven'
-
-version '0.3.0'
-group 'com.commonsware.cwac'
-
-dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
-}
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 17
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.1.0"
 
     sourceSets {
         main {
@@ -50,6 +32,18 @@ android.libraryVariants.all { variant ->
 //        options.links("http://d.android.com/reference/");
         exclude '**/BuildConfig.java'
         exclude '**/R.java'
+    }
+}
+
+apply plugin: 'maven'
+ 
+uploadArchives {
+    repositories.mavenDeployer {
+        pom.groupId = PUBLISH_GROUP_ID
+        pom.artifactId = PUBLISH_ARTIFACT_ID
+        pom.version = PUBLISH_VERSION
+
+        repository(url: LOCAL_REPO)
     }
 }
 
