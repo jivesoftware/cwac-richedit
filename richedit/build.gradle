@@ -37,13 +37,13 @@ android.libraryVariants.all { variant ->
 
 apply plugin: 'maven'
  
-uploadArchives {
-    repositories.mavenDeployer {
-        pom.groupId = PUBLISH_GROUP_ID
-        pom.artifactId = PUBLISH_ARTIFACT_ID
-        pom.version = PUBLISH_VERSION
-
-        repository(url: LOCAL_REPO)
-    }
-}
+//uploadArchives {
+//    repositories.mavenDeployer {
+//        pom.groupId = PUBLISH_GROUP_ID
+//        pom.artifactId = PUBLISH_ARTIFACT_ID
+//        pom.version = PUBLISH_VERSION
+//
+//        repository(url: LOCAL_REPO)
+//    }
+//}
 
