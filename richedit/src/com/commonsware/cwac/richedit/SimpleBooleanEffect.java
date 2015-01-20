@@ -17,6 +17,8 @@ package com.commonsware.cwac.richedit;
 import android.text.Spannable;
 import android.util.Log;
 
+import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
+
 public class SimpleBooleanEffect<T> extends Effect<Boolean> {
   private Class<T> clazz;
 
@@ -80,19 +82,15 @@ public class SimpleBooleanEffect<T> extends Effect<Boolean> {
 
     try {
       if (add) {
-        str.setSpan(clazz.newInstance(), selection.start,
-                    selection.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        setSpan(str, clazz.newInstance(), selection.start, selection.end);
       }
       else {
         if (prologueStart < Integer.MAX_VALUE) {
-          str.setSpan(clazz.newInstance(), prologueStart,
-                      selection.start,
-                      Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+          setSpan(str, clazz.newInstance(), prologueStart, selection.start);
         }
 
         if (epilogueEnd > -1) {
-          str.setSpan(clazz.newInstance(), selection.end,
-                      epilogueEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+          setSpan(str, clazz.newInstance(), selection.end, epilogueEnd);
         }
       }
     }

@@ -18,6 +18,8 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.style.AlignmentSpan;
 
+import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
+
 public class LineAlignmentEffect extends Effect<Layout.Alignment> {
   @Override
   boolean existsInSelection(RichEditText editor) {
@@ -47,8 +49,7 @@ public class LineAlignmentEffect extends Effect<Layout.Alignment> {
     }
 
     if (alignment!=null) {
-      str.setSpan(new AlignmentSpan.Standard(alignment), selection.start, selection.end,
-                  Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      setSpan(str, new AlignmentSpan.Standard(alignment), selection.start, selection.end);
     }
   }
 

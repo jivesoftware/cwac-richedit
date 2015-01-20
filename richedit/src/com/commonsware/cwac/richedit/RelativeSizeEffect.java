@@ -17,6 +17,8 @@ package com.commonsware.cwac.richedit;
 import android.text.Spannable;
 import android.text.style.RelativeSizeSpan;
 
+import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
+
 public class RelativeSizeEffect extends Effect<Float> {
   @Override
   boolean existsInSelection(RichEditText editor) {
@@ -54,8 +56,7 @@ public class RelativeSizeEffect extends Effect<Float> {
     }
 
     if (proportion != null) {
-      str.setSpan(new RelativeSizeSpan(proportion), selection.start,
-                  selection.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      setSpan(str, new RelativeSizeSpan(proportion), selection.start, selection.end);
     }
   }
 

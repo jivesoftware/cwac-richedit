@@ -17,6 +17,8 @@ package com.commonsware.cwac.richedit;
 import android.text.Spannable;
 import android.text.style.StyleSpan;
 
+import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
+
 public class StyleEffect extends Effect<Boolean> {
   private int style;
 
@@ -101,18 +103,15 @@ public class StyleEffect extends Effect<Boolean> {
     }
 
     if (add) {
-      str.setSpan(new StyleSpan(style), selection.start, selection.end,
-                  Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      setSpan(str, new StyleSpan(style), selection.start, selection.end);
     }
     else {
       if (prologueStart < Integer.MAX_VALUE) {
-        str.setSpan(new StyleSpan(style), prologueStart,
-                    selection.start, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        setSpan(str, new StyleSpan(style), prologueStart, selection.start);
       }
 
       if (epilogueEnd > -1) {
-        str.setSpan(new StyleSpan(style), selection.end, epilogueEnd,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        setSpan(str, new StyleSpan(style), selection.end, epilogueEnd);
       }
     }
   }

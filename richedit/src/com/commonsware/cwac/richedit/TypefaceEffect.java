@@ -17,6 +17,8 @@ package com.commonsware.cwac.richedit;
 import android.text.Spannable;
 import android.text.style.TypefaceSpan;
 
+import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
+
 public class TypefaceEffect extends Effect<String> {
   @Override
   boolean existsInSelection(RichEditText editor) {
@@ -66,18 +68,15 @@ public class TypefaceEffect extends Effect<String> {
     }
 
     if (family != null) {
-      str.setSpan(new TypefaceSpan(family), selection.start,
-                  selection.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      setSpan(str, new TypefaceSpan(family), selection.start, selection.end);
     }
     
     if (prologueStart < Integer.MAX_VALUE) {
-      str.setSpan(new TypefaceSpan(oldFamily), prologueStart,
-                  selection.start, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      setSpan(str, new TypefaceSpan(oldFamily), prologueStart, selection.start);
     }
 
     if (epilogueEnd > -1) {
-      str.setSpan(new TypefaceSpan(oldFamily), selection.end,
-                  epilogueEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      setSpan(str, new TypefaceSpan(oldFamily), selection.end, epilogueEnd);
     }
   }
 
