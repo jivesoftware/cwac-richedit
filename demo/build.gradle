@@ -8,12 +8,13 @@ repositories {
 
 dependencies {
     debugCompile project(':richedit')
+    //noinspection GradleDynamicVersion
     releaseCompile 'com.commonsware.cwac:richedit:0.3.+'
 }
 
 android {
-    compileSdkVersion 17
-    buildToolsVersion "19.1.0"
+    compileSdkVersion 21
+    buildToolsVersion "21.1.2"
 
     sourceSets {
         main {
