@@ -16,9 +16,20 @@ package com.commonsware.cwac.richedit;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.text.Annotation;
+import android.text.Editable;
 import android.text.Layout;
+import android.text.SpanWatcher;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.SubscriptSpan;
 import android.text.style.SuperscriptSpan;
@@ -26,8 +37,12 @@ import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.EditText;
+import android.widget.TextView;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Custom widget that simplifies adding rich text editing
@@ -41,6 +56,9 @@ import java.util.List;
  */
 public class RichEditText extends EditText implements
     EditorActionModeListener {
+  public static final String OBJECT_REPLACEMENT = "\uFFFC";
+  public static final String IMAGE_SPAN_KEY_ANNOTATION = RichEditText.class.getName() + ":imageSpanKey";
+
   public static final Effect<Boolean> BOLD=
       new StyleEffect(Typeface.BOLD);
   public static final Effect<Boolean> ITALIC=
@@ -362,6 +380,82 @@ public class RichEditText extends EditText implements
     setCustomSelectionActionModeCallback(entryMode);
   }
 
+  @Override
+  public Parcelable onSaveInstanceState() {
+    Parcelable superState=super.onSaveInstanceState();
+    SavedState savedState=new SavedState(superState);
+    savedState.keyboardShortcuts = keyboardShortcuts;
+    savedState.actionModesEnabled=(mainMode != null);
+    return savedState;
+  }
+
+  @Override
+  public void onRestoreInstanceState(Parcelable state) {
+    if (state instanceof SavedState) {
+      SavedState savedState = (SavedState)state;
+      super.onRestoreInstanceState(savedState.getSuperState());
+
+      this.keyboardShortcuts=savedState.keyboardShortcuts;
+      if (savedState.actionModesEnabled) {
+        enableActionModes(false);
+      }
+    } else {
+      super.onRestoreInstanceState(state);
+    }
+  }
+
+    @Override
+    public void setText(CharSequence text, BufferType type) {
+        super.setText(text, type);
+    }
+
+    /**
+   * Insert an ImageSpan at the current selection point if the selection is empty or overwrite the
+   * current selection if non-empty. The key is used to uniquely identify the ImageSpan's location
+   * so it can be recreated after onRestoreInstanceState().
+   *
+   * Android doesn't persist ImageSpans when this view saves its state with
+   * onSaveInstanceState(), so RichEditText consumers must save that state themselves.
+   */
+  public void insertImage(ImageSpan imageSpan, String key) {
+    Selection oldSelection = new Selection(this);
+    Editable str = getText();
+    str.replace(oldSelection.start, oldSelection.end, OBJECT_REPLACEMENT);
+    int newEnd = oldSelection.start + OBJECT_REPLACEMENT.length();
+    str.setSpan(imageSpan, oldSelection.start, newEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    str.setSpan(new Annotation(IMAGE_SPAN_KEY_ANNOTATION, key), oldSelection.start, newEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    if (oldSelection.isEmpty()) {
+      setSelection(newEnd, newEnd);
+    }
+    else {
+      setSelection(oldSelection.start, newEnd);
+    }
+  }
+
+  /**
+   * Restore previously inserted images. Consumers may call this method many times
+   * after Android has restored this view, but each call requires a full scan of all
+   * ImageSpan keys, so a single call is more efficient.
+   */
+  public void restoreImages(final Map<String, ImageSpan> imageSpansByKey) {Editable str = getText();
+    Annotation[] annotations = str.getSpans(0, str.length(), Annotation.class);
+    for (Annotation annotation : annotations) {
+      if (IMAGE_SPAN_KEY_ANNOTATION.equals(annotation.getKey())) {
+        int start = str.getSpanStart(annotation);
+        int end = str.getSpanEnd(annotation);
+        String key = annotation.getValue();
+        ImageSpan newImageSpan = imageSpansByKey.get(key);
+        if (newImageSpan != null) {
+          ImageSpan[] oldImageSpans = str.getSpans(start, end, ImageSpan.class);
+          for (ImageSpan oldImageSpan : oldImageSpans) {
+            str.removeSpan(oldImageSpan);
+          }
+          str.setSpan(newImageSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+      }
+    }
+  }
+
   public void disableActionModes() {
     setCustomSelectionActionModeCallback(null);
     mainMode=null;
@@ -379,6 +473,28 @@ public class RichEditText extends EditText implements
      * a toolbar when the selection changes).
      */
     void onSelectionChanged(int start, int end, List<Effect<?>> effects);
+  }
+
+  public static abstract class ImageSpanKeyAnnotationSpanWatcher implements SpanWatcher {
+    @Override
+    public void onSpanAdded(Spannable text, Object what, int start, int end) {
+    }
+
+    @Override
+    public void onSpanRemoved(Spannable text, Object what, int start, int end) {
+      if (what instanceof Annotation) {
+        Annotation annotation = (Annotation) what;
+        if (IMAGE_SPAN_KEY_ANNOTATION.equals(annotation.getKey())) {
+          onImageSpanRemoved(annotation.getValue());
+        }
+      }
+    }
+
+    @Override
+    public void onSpanChanged(Spannable text, Object what, int ostart, int oend, int nstart, int nend) {
+    }
+
+    public abstract void onImageSpanRemoved(String key);
   }
 
   private static class UnderlineEffect extends
@@ -406,6 +522,41 @@ public class RichEditText extends EditText implements
       SimpleBooleanEffect<SubscriptSpan> {
     SubscriptEffect() {
       super(SubscriptSpan.class);
+    }
+  }
+
+  private static class SavedState extends BaseSavedState {
+
+    public static final Parcelable.Creator<SavedState> CREATOR=new Parcelable.Creator<SavedState>() {
+    public SavedState createFromParcel(Parcel in) {
+        return new SavedState(in);
+      }
+      public SavedState[] newArray(int size) {
+        return new SavedState[size];
+      }
+    };
+
+    boolean keyboardShortcuts;
+    boolean actionModesEnabled;
+
+    public SavedState(Parcelable superState) {
+        super(superState);
+    }
+
+    private SavedState(Parcel in) {
+      super(in);
+
+      boolean[] flags=new boolean[2];
+      in.readBooleanArray(flags);
+      this.keyboardShortcuts=flags[0];
+      this.actionModesEnabled=flags[1];
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+      super.writeToParcel(dest, flags);
+
+      dest.writeBooleanArray(new boolean[] {keyboardShortcuts, actionModesEnabled});
     }
   }
 }
