@@ -9,4 +9,7 @@
     <string name="await_image_capture_exception">Couldn\'t create capture directory</string>
     <string name="image_capture_failed_io">Image Capture Failed (IO)</string>
     <string name="image_capture_failed_oom">Image Capture Failed (OOM)</string>
+    <string name="link">Link</string>
+    <string name="unlink">Unlink</string>
+    <string name="dump_spans">Dump Spans</string>
 </resources>

@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
     <com.commonsware.cwac.richedit.RichEditText xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/editor"
         android:layout_width="match_parent"
@@ -11,12 +12,34 @@
         android:freezesText="true"
         android:gravity="start|top"
         android:imeOptions="flagNoExtractUi"
-        android:layout_weight="1"/>
-    <ImageButton
-        android:layout_gravity="start"
-        android:id="@+id/insertImageButton"
-        android:layout_width="wrap_content"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/icon_camera"
-        android:contentDescription="@string/insert_image_content_description"/>
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/insertImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/insert_image_content_description"
+            android:layout_gravity="start"
+            android:src="@drawable/icon_camera" />
+
+        <ToggleButton
+            android:id="@+id/linkToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:textOn="@string/unlink"
+            android:textOff="@string/link" />
+
+        <Button
+            android:id="@+id/dumpSpansButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:text="@string/dump_spans"/>
+    </LinearLayout>
 </LinearLayout>

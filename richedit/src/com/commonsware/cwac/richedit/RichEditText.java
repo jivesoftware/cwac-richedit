@@ -16,9 +16,7 @@ package com.commonsware.cwac.richedit;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -27,7 +25,6 @@ import android.text.Editable;
 import android.text.Layout;
 import android.text.SpanWatcher;
 import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
@@ -37,12 +34,12 @@ import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static com.commonsware.cwac.richedit.SpanIterationUtil.iterateSpans;
 
 /**
  * Custom widget that simplifies adding rich text editing
@@ -57,7 +54,6 @@ import java.util.Map;
 public class RichEditText extends EditText implements
     EditorActionModeListener {
   public static final String OBJECT_REPLACEMENT = "\uFFFC";
-  public static final String IMAGE_SPAN_KEY_ANNOTATION = RichEditText.class.getName() + ":imageSpanKey";
 
   public static final Effect<Boolean> BOLD=
       new StyleEffect(Typeface.BOLD);
@@ -72,9 +68,19 @@ public class RichEditText extends EditText implements
   public static final Effect<Boolean> SUPERSCRIPT=
       new SuperscriptEffect();
   public static final Effect<Boolean> SUBSCRIPT=new SubscriptEffect();
+  public static final Effect<String> LINK=new LinkEffect();
 
   private static final ArrayList<Effect<?>> EFFECTS=
       new ArrayList<Effect<?>>();
+  private static final SpanIterationUtil.SpanPredicate<Annotation> IMAGE_SPAN_KEY_ANNOTATION_SPAN_PREDICATE=
+      new SpanIterationUtil.SpanPredicate<Annotation>() {
+        @Override
+        public boolean select(Annotation span) {
+          return AnnotationManager.IMAGE_SPAN_KEY.matches(span);
+        }
+      };
+
+
   private boolean isSelectionChanging=false;
   private OnSelectionChangedListener selectionListener=null;
   private boolean actionModeIsShowing=false;
@@ -104,6 +110,7 @@ public class RichEditText extends EditText implements
      */
     EFFECTS.add(LINE_ALIGNMENT);
     EFFECTS.add(TYPEFACE);
+    EFFECTS.add(LINK);
   }
 
   /*
@@ -411,9 +418,9 @@ public class RichEditText extends EditText implements
       }
 
       if (imageSpanRestorer != null) {
-        iterateImageSpanKeyAnnotations(new ImageSpanKeyAnnotationIteration() {
+        iterateImageSpanKeyAnnotations(new SpanIterationUtil.SpanIteration<Editable, Annotation>() {
           @Override
-          public boolean iteration(Editable str, Annotation imageSpanKeyAnnotation) {
+          public boolean iterate(Editable str, Annotation imageSpanKeyAnnotation) {
             // The ImageSpanManager might've nullified itself on a previous iteration
             if (imageSpanRestorer == null) {
               return false;
@@ -454,7 +461,10 @@ public class RichEditText extends EditText implements
     str.replace(oldSelection.start, oldSelection.end, OBJECT_REPLACEMENT);
     int newEnd = oldSelection.start + OBJECT_REPLACEMENT.length();
     str.setSpan(imageSpan, oldSelection.start, newEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-    str.setSpan(new Annotation(IMAGE_SPAN_KEY_ANNOTATION, key), oldSelection.start, newEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    str.setSpan(AnnotationManager.IMAGE_SPAN_KEY.createAnnotation(key),
+                oldSelection.start,
+                newEnd,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     if (oldSelection.isEmpty()) {
       setSelection(newEnd, newEnd);
     }
@@ -464,9 +474,9 @@ public class RichEditText extends EditText implements
   }
 
   public void setImageSpans(final Map<String, ImageSpan> imageSpansByKey) {
-    iterateImageSpanKeyAnnotations(new ImageSpanKeyAnnotationIteration() {
+    iterateImageSpanKeyAnnotations(new SpanIterationUtil.SpanIteration<Editable, Annotation>() {
       @Override
-      public boolean iteration(Editable str, Annotation imageSpanKeyAnnotation) {
+      public boolean iterate(Editable str, Annotation imageSpanKeyAnnotation) {
         String key = imageSpanKeyAnnotation.getValue();
         ImageSpan newImageSpan = imageSpansByKey.get(key);
         if (newImageSpan != null) {
@@ -483,21 +493,11 @@ public class RichEditText extends EditText implements
     });
   }
 
-  private interface ImageSpanKeyAnnotationIteration {
-    boolean iteration(Editable str, Annotation imageSpanKeyAnnotation);
-  }
-
-  private void iterateImageSpanKeyAnnotations(ImageSpanKeyAnnotationIteration imageSpanKeyAnnotationIteration) {
+  private void iterateImageSpanKeyAnnotations(SpanIterationUtil.SpanIteration<Editable, Annotation> imageSpanKeyAnnotationSpanIteration) {
     Editable str = getText();
-    Annotation[] annotations = str.getSpans(0, str.length(), Annotation.class);
-    for (Annotation annotation : annotations) {
-      if (IMAGE_SPAN_KEY_ANNOTATION.equals(annotation.getKey())) {
-        boolean shouldContinue = imageSpanKeyAnnotationIteration.iteration(str, annotation);
-        if (!shouldContinue) {
-          break;
-        }
-      }
-    }
+    iterateSpans(str, new Selection(0, str.length()), Annotation.class,
+                 IMAGE_SPAN_KEY_ANNOTATION_SPAN_PREDICATE,
+                 imageSpanKeyAnnotationSpanIteration);
   }
 
   public void disableActionModes() {
@@ -545,7 +545,7 @@ public class RichEditText extends EditText implements
     public void onSpanRemoved(Spannable text, Object what, int start, int end) {
       if (what instanceof Annotation) {
         Annotation annotation = (Annotation) what;
-        if (IMAGE_SPAN_KEY_ANNOTATION.equals(annotation.getKey())) {
+        if (AnnotationManager.IMAGE_SPAN_KEY.matches(annotation)) {
           if (imageSpanWatcher != null) {
             imageSpanWatcher.onImageSpanRemoved(annotation.getValue());
           }

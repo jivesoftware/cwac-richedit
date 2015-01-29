@@ -15,27 +15,52 @@
 package com.commonsware.cwac.richedit.demo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.DialogPreference;
+import android.text.Annotation;
+import android.text.Editable;
+import android.text.NoCopySpan;
+import android.text.SpanWatcher;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import com.commonsware.cwac.richedit.Effect;
+import com.commonsware.cwac.richedit.LinkEffect;
 import com.commonsware.cwac.richedit.RichEditText;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RichTextEditorDemoActivity extends Activity {
     private static final String TAG = "cwac-richedit-demo";
     RichEditText editor;
     ImageButton insertImageImageButton;
+    ToggleButton linkToggleButton;
+    RichEditText.OnSelectionChangedListener onSelectionChangedListener = new RichEditText.OnSelectionChangedListener() {
+      @Override
+      public void onSelectionChanged(int start, int end, List<Effect<?>> effects) {
+        boolean containsLinkEffect = effects.contains(RichEditText.LINK);
+        linkToggleButton.setChecked(containsLinkEffect);
+      }
+    };
+    Button dumpSpansButton;
+
     ImageCapturer imageCapturer;
     ImageCapturer.ImageCapturedCallback imageCapturedCallback = new ImageCapturer.ImageCapturedCallback() {
         @Override
@@ -120,6 +145,7 @@ public class RichTextEditorDemoActivity extends Activity {
         editor.enableActionModes(true);
         editor.setImageSpanRestorer(imageSpanRestorer);
         editor.setImageSpanWatcher(imageSpanWatcher);
+        editor.setOnSelectionChangedListener(onSelectionChangedListener);
 
         insertImageImageButton = (ImageButton) findViewById(R.id.insertImageButton);
         insertImageImageButton.setOnClickListener(new View.OnClickListener() {
@@ -131,6 +157,79 @@ public class RichTextEditorDemoActivity extends Activity {
                     Toast.makeText(RichTextEditorDemoActivity.this,
                             R.string.await_image_capture_exception,
                             Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        linkToggleButton = (ToggleButton) findViewById(R.id.linkToggleButton);
+        linkToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String value = editor.getEffectValue(RichEditText.LINK);
+                if (value == null) {
+                    linkToggleButton.setChecked(false);
+                    AlertDialog.Builder alert = new AlertDialog.Builder(RichTextEditorDemoActivity.this);
+
+                    alert.setTitle("Link Contents");
+                    alert.setMessage("Enter Link Contents");
+                    final EditText input = new EditText(RichTextEditorDemoActivity.this);
+                    alert.setView(input);
+
+                    alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            int selectionStart = editor.getSelectionStart();
+                            String link = input.getText().toString();
+                            String text = "Link";
+                            editor.getText().replace(
+                                    selectionStart,
+                                    editor.getSelectionEnd(),
+                                    text);
+                            editor.setSelection(selectionStart, selectionStart + text.length());
+                            editor.applyEffect(RichEditText.LINK, link);
+                            linkToggleButton.setChecked(true);
+                        }
+                    });
+
+                    alert.setNegativeButton("Cancel", null);
+
+                    alert.show();
+                } else {
+                  editor.applyEffect(RichEditText.LINK, null);
+                }
+            }
+        });
+        dumpSpansButton = (Button)findViewById(R.id.dumpSpansButton);
+        dumpSpansButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Editable text = editor.getText();
+                Object[] spans = text.getSpans(0, text.length(), Object.class);
+                Arrays.sort(spans, new Comparator<Object>() {
+                    @Override
+                    public int compare(Object lhs, Object rhs) {
+                        int lhsStart = text.getSpanStart(lhs);
+                        int rhsStart = text.getSpanStart(rhs);
+                        if (lhsStart == rhsStart) {
+                            int lhsEnd = text.getSpanStart(lhs);
+                            int rhsEnd = text.getSpanStart(rhs);
+                            return lhsEnd - rhsEnd;
+                        } else {
+                            return lhsStart - rhsStart;
+                        }
+                    }
+                });
+                for (Object span : spans) {
+                    if (!(span instanceof NoCopySpan)) {
+                        int spanStart = text.getSpanStart(span);
+                        int spanEnd = text.getSpanEnd(span);
+                        CharSequence spanText = text.subSequence(spanStart, spanEnd);
+                        if (span instanceof Annotation) {
+                            Annotation annotation = (Annotation)span;
+                            Log.i(TAG, "Span: " + annotation.getClass() + "[key=" + annotation.getKey() + ", value=" + annotation.getValue() + "], text: \"" + spanText + "\"");
+                        } else {
+                            Log.i(TAG, "Span: " + span + "m text: \"" + spanText + "\"");
+                        }
+                    }
                 }
             }
         });
