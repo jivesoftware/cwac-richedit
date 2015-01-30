@@ -38,6 +38,7 @@ import android.widget.ToggleButton;
 import com.commonsware.cwac.richedit.Effect;
 import com.commonsware.cwac.richedit.LinkEffect;
 import com.commonsware.cwac.richedit.RichEditText;
+import com.jivesoftware.android.imagecapturer.ImageCapturer;
 
 import java.io.File;
 import java.io.IOException;
@@ -258,8 +259,8 @@ public class RichTextEditorDemoActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Integer imageCapturerResultCode = imageCapturer.onActivityResult(this, requestCode, resultCode, data, imageCapturedCallback);
-        if (Integer.valueOf(1).equals(imageCapturerResultCode)) {
+        ImageCapturer.Result result = imageCapturer.onActivityResult(this, requestCode, resultCode, data, imageCapturedCallback, null);
+        if (ImageCapturer.Result.PROCESSING == result) {
             insertImageImageButton.setEnabled(false);
             editor.setEnabled(false);
         } else {

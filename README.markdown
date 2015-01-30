@@ -1,6 +1,12 @@
 CWAC RichEditText: Letting Users Make Text Pretty
 =================================================
 
+Jive Software forked this project to add support for links and images. Commonsware can't accept
+a pull request for a change of this magnitude because commonsware wants to retain exclusive
+copyright of this project. Commonsware plans to create new API that provides similar
+capabilities to this fork, and we plan to use Commonsware's version when that happens.
+
+
 Android's `EditText` widget supports formatted (a.k.a.,
 "rich text") editing. It just lacks any way for the user
 to supply formatting, and it does not provide much in the
@@ -62,6 +68,7 @@ widgets to your layout as needed:
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
   android:gravity="top|left"
+  android:freezeText="true"
   android:inputType="textMultiLine">
 
   <requestFocus/>
@@ -115,6 +122,17 @@ update your toolbar to indicate what is and is not in use,
 and so you know what to do when the user taps on one of
 those toolbar buttons again.
 
+- `setImageSpanRestorer()` is where you register a
+`RichEditText.ImageSpanRestorer` object, which will be called from
+`RichEditText#onRestoreInstanceState` with `getImageSpanForKey()` on each IMAGE_SPAN_KEY annotation
+found. This is an opportunity for consumers to restore images previously inserted with
+`RichEditText#insertImage`.
+
+- `setImageSpanWatcher()` is where you register a
+`RichEditText.ImageSpanWatcher`, which will be called with `onImageSpanRemoved()` when the user
+deletes an IMAGE_SPAN_KEY Annotation (and thus an ImageSpan). This is required so that consumers can
+delete resources associated with an ImageSpan when the ImageSpan is deleted.
+
 ### Supported Effects
 
 At the time of this writing, here are the `RichEditText`
@@ -128,23 +146,37 @@ static data members for each supported effect:
 - `SUBSCRIPT`
 - `TYPEFACE`
 
+#### Jive Software Added Effects
+
+- `LINK`
+
+Links aren't implemented as ClickableSpans because ClickableSpans aren't ParcelableSpans. Thus,
+ClickableSpans won't be saved when RichEditText saves its state. Instead, Links are implemented as
+Annotations with a key "LINK".
+
 There are other effects presently implemented, but they
 will be revised shortly, including name and data type
 changes, so don't mess with them yet.
 
 Dependencies
 ------------
-There are no third-party dependencies at this time.
+To demonstrate image insertion, the demo app depends on
+[Jive Software's ImageCapturer](https://github.com/jivesoftware/ImageCapturer). We depend on this
+project as a submodule that is symlinked directly into the demo source so that it will build
+easily with eclipse, which lacks support for AAR files. Update submodules before running the demo.
+
+```
+git submodule update --init --recursive
+```
 
 This project should work on API Level 7 and higher, except for any portions that
 may be noted otherwise in this document. Please report bugs if you find features
 that do not work on API Level 7 and are not noted as requiring a higher version.
 
+
 Version
 -------
-This is version v0.3.1 of this module, meaning it is out of its years-long
-hibernation and is ready to rampage through downtown San Francisco (or other
-cities if you prefer).
+This is version v0.4.0 of this module.
 
 Demo
 ----
@@ -180,6 +212,7 @@ the fence may work, but it may not.
 
 Release Notes
 -------------
+- v0.4.0: Added support for links and images
 - v0.3.1: updated for Android Studio 1.0 and new AAR publishing system
 - v0.3.0: removed ActionBarSherlock support, icon for FORMAT action mode item, fixed clipboard bug, added Gradle support
 - v0.2.0: added keyboard shortcuts for bold/italic/underline and test suite, bug fixes
