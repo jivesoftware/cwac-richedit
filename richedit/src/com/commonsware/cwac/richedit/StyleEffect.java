@@ -27,7 +27,7 @@ public class StyleEffect extends Effect<Boolean> {
   }
 
   @Override
-  boolean existsInSelection(RichEditText editor) {
+  public boolean existsInSelection(RichEditText editor) {
     Selection selection=new Selection(editor);
     Spannable str=editor.getText();
     boolean result=false;
@@ -71,12 +71,12 @@ public class StyleEffect extends Effect<Boolean> {
   }
 
   @Override
-  Boolean valueInSelection(RichEditText editor) {
+  public Boolean valueInSelection(RichEditText editor) {
     return(existsInSelection(editor));
   }
 
   @Override
-  void applyToSelection(RichEditText editor, Boolean add) {
+  public void applyToSelection(RichEditText editor, Boolean add) {
     applyToSpannable(editor.getText(), new Selection(editor), add);
   }
 

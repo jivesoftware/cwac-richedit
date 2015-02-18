@@ -16,12 +16,12 @@ public class LinkEffect extends Effect<String> {
       };
 
   @Override
-  boolean existsInSelection(RichEditText editor) {
+  public boolean existsInSelection(RichEditText editor) {
     return(valueInSelection(editor) != null);
   }
 
   @Override
-  String valueInSelection(RichEditText editor) {
+  public String valueInSelection(RichEditText editor) {
     Selection selection=new Selection(editor);
     Spannable str=editor.getText();
     return iterateSpans(str, selection, Annotation.class,
@@ -37,7 +37,7 @@ public class LinkEffect extends Effect<String> {
   }
 
   @Override
-  void applyToSelection(RichEditText editor, String value) {
+  public void applyToSelection(RichEditText editor, String value) {
     applyToSpannable(editor.getText(), new Selection(editor), value);
   }
 

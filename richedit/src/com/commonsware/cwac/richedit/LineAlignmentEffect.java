@@ -22,12 +22,12 @@ import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
 
 public class LineAlignmentEffect extends Effect<Layout.Alignment> {
   @Override
-  boolean existsInSelection(RichEditText editor) {
+  public boolean existsInSelection(RichEditText editor) {
     return(valueInSelection(editor)!=null);
   }
 
   @Override
-  Layout.Alignment valueInSelection(RichEditText editor) {
+  public Layout.Alignment valueInSelection(RichEditText editor) {
     Selection selection=new Selection(editor);
     Spannable str=editor.getText();
     AlignmentSpan.Standard[] spans=getAlignmentSpans(str, selection);
@@ -40,7 +40,7 @@ public class LineAlignmentEffect extends Effect<Layout.Alignment> {
   }
 
   @Override
-  void applyToSelection(RichEditText editor, Layout.Alignment alignment) {
+  public void applyToSelection(RichEditText editor, Layout.Alignment alignment) {
     Selection selection=new Selection(editor);
     Spannable str=editor.getText();
 

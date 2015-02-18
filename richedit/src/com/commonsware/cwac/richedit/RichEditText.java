@@ -98,19 +98,19 @@ public class RichEditText extends EditText implements
     /*
      * Boolean effects
      */
-    EFFECTS.add(BOLD);
-    EFFECTS.add(ITALIC);
-    EFFECTS.add(UNDERLINE);
-    EFFECTS.add(STRIKETHROUGH);
-    EFFECTS.add(SUPERSCRIPT);
-    EFFECTS.add(SUBSCRIPT);
+    registerEffect(BOLD);
+    registerEffect(ITALIC);
+    registerEffect(UNDERLINE);
+    registerEffect(STRIKETHROUGH);
+    registerEffect(SUPERSCRIPT);
+    registerEffect(SUBSCRIPT);
 
     /*
      * Non-Boolean effects
      */
-    EFFECTS.add(LINE_ALIGNMENT);
-    EFFECTS.add(TYPEFACE);
-    EFFECTS.add(LINK);
+    registerEffect(LINE_ALIGNMENT);
+    registerEffect(TYPEFACE);
+    registerEffect(LINK);
   }
 
   /*
@@ -135,6 +135,15 @@ public class RichEditText extends EditText implements
    */
   public RichEditText(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
+  }
+
+  /*
+   * Add an {@link Effect} to the list of recognized effects.
+   *
+   * This must be done in order for the effect to be reported in selection change events.
+   */
+  public static void registerEffect(Effect<?> effect) {
+    EFFECTS.add(effect);
   }
 
   /*
@@ -237,13 +246,13 @@ public class RichEditText extends EditText implements
     this.imageSpanWatcher = imageSpanWatcher;
   }
 
-    /*
-       * Call this to have an effect applied to the current
-       * selection. You get the Effect object via the static
-       * data members (e.g., RichEditText.BOLD). The value for
-       * most effects is a Boolean, indicating whether to add or
-       * remove the effect.
-       */
+  /*
+   * Call this to have an effect applied to the current
+   * selection. You get the Effect object via the static
+   * data members (e.g., RichEditText.BOLD). The value for
+   * most effects is a Boolean, indicating whether to add or
+   * remove the effect.
+   */
   public <T> void applyEffect(Effect<T> effect, T value) {
     if (!isSelectionChanging) {
       effect.applyToSelection(this, value);

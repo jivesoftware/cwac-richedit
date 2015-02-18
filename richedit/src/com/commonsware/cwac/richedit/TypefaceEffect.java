@@ -21,12 +21,12 @@ import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
 
 public class TypefaceEffect extends Effect<String> {
   @Override
-  boolean existsInSelection(RichEditText editor) {
+  public boolean existsInSelection(RichEditText editor) {
     return(valueInSelection(editor) != null);
   }
 
   @Override
-  String valueInSelection(RichEditText editor) {
+  public String valueInSelection(RichEditText editor) {
     Selection selection=new Selection(editor);
     Spannable str=editor.getText();
     TypefaceSpan[] spans=getTypefaceSpans(str, selection);
@@ -39,7 +39,7 @@ public class TypefaceEffect extends Effect<String> {
   }
 
   @Override
-  void applyToSelection(RichEditText editor, String family) {
+  public void applyToSelection(RichEditText editor, String family) {
     applyToSpannable(editor.getText(), new Selection(editor), family);
   }
 
