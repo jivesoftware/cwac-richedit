@@ -27,7 +27,7 @@ public class SimpleBooleanEffect<T> extends Effect<Boolean> {
   }
 
   @Override
-  public boolean existsInSelection(RichEditText editor) {
+  protected boolean existsInSelection(RichEditText editor) {
     Selection selection=new Selection(editor);
     Spannable str=editor.getText();
     boolean result=false;
@@ -50,12 +50,12 @@ public class SimpleBooleanEffect<T> extends Effect<Boolean> {
   }
 
   @Override
-  public Boolean valueInSelection(RichEditText editor) {
+  protected Boolean valueInSelection(RichEditText editor) {
     return(existsInSelection(editor));
   }
 
   @Override
-  public void applyToSelection(RichEditText editor, Boolean add) {
+  protected void applyToSelection(RichEditText editor, Boolean add) {
     applyToSpannable(editor.getText(), new Selection(editor), add);
   }
 
