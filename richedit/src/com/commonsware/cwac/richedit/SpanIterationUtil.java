@@ -4,28 +4,28 @@ import android.text.Spannable;
 
 import static com.commonsware.cwac.richedit.SpannableUtil.setSpan;
 
-final class SpanIterationUtil {
-  static final class SpanIterationReduction<R> {
-    R reduction;
+public final class SpanIterationUtil {
+  public static final class SpanIterationReduction<R> {
+    public R reduction;
   }
 
-  interface ReducingSpanIteration<R, S extends Spannable, T> {
+  public interface ReducingSpanIteration<R, S extends Spannable, T> {
     boolean iterate(S str, T span, SpanIterationReduction<R> spanIterationReduction);
   }
 
-  interface SpanIteration<S extends Spannable, T> {
+  public interface SpanIteration<S extends Spannable, T> {
     boolean iterate(S str, T span);
   }
 
-  interface SpanPredicate<T> {
+  public interface SpanPredicate<T> {
     boolean select(T span);
   }
 
-  interface SpanValueProvider<R, T> {
+  public interface SpanValueProvider<R, T> {
     R getValue(T span);
   }
 
-  interface SpanProvider<R, T> {
+  public interface SpanProvider<R, T> {
     T provideSpan(R value);
   }
 

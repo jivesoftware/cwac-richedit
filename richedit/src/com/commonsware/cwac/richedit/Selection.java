@@ -16,7 +16,7 @@ package com.commonsware.cwac.richedit;
 
 import android.widget.EditText;
 
-class Selection {
+public final class Selection {
   int start;
   int end;
 
@@ -31,7 +31,7 @@ class Selection {
     }
   }
 
-  Selection(EditText editor) {
+  public Selection(EditText editor) {
     this(editor.getSelectionStart(), editor.getSelectionEnd());
   }
 
