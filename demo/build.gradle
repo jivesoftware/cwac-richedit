@@ -1,3 +1,4 @@
+apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 
 repositories {
@@ -7,9 +8,7 @@ repositories {
 }
 
 dependencies {
-    debugCompile project(':richedit')
-    //noinspection GradleDynamicVersion
-    releaseCompile 'com.commonsware.cwac:richedit:0.3.+'
+    compile project(':richedit')
 }
 
 android {
